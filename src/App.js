@@ -1,25 +1,66 @@
-import logo from './logo.svg';
-import './App.css';
+import axios from "axios";
+import React, { useState } from "react";
+import AddProduct from "./components/AddProduct/AddProduct";
+import List from "./components/List/List";
+import "./App.css";
+import Edit from "./components/Edit/Edit";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import Details from "./components/Details/Details";
 
-function App() {
+const App = () => {
+  const API = "http://localhost:8001/data";
+  const [data, setData] = useState([]);
+  const [oneData, setOneData] = useState(null);
+  async function addData(newData) {
+    await axios.post(API, newData);
+    getData();
+  }
+  async function getData() {
+    let res = await axios(API);
+    // console.log(res);
+    setData(res.data);
+  }
+  async function deleteData(id) {
+    await axios.delete(`${API}/${id}`);
+    getData();
+  }
+  async function getOneData(id) {
+    let res = await axios(`${API}/${id}`);
+    setOneData(res.data);
+  }
+  async function updataData(id, editedData) {
+    await axios.patch(`${API}/${id}`, editedData);
+    getData();
+  }
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="block-body">
+      <BrowserRouter>
+        <Routes>
+          <Route path="/add" element={<AddProduct addData={addData} />} />
+          <Route
+            path="/"
+            element={
+              <List deleteData={deleteData} data={data} getData={getData} />
+            }
+          />
+          <Route
+            path="edit/:id"
+            element={
+              <Edit
+                getOneData={getOneData}
+                oneData={oneData}
+                updataData={updataData}
+              />
+            }
+          />
+          <Route
+            path="/details/:id"
+            element={<Details oneData={oneData} getOneData={getOneData} />}
+          />
+        </Routes>
+      </BrowserRouter>
     </div>
   );
-}
+};
 
 export default App;
